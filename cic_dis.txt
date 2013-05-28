@@ -69,10 +69,12 @@ SB=stack B register (save register for B)
 0x100 : E1 40	tl 500				 Jump 500
 0x102 : 82 	tr 2				 Freeze
 0x103 : 82 	tr 2				 Freeze
-0x104 : 10 	lax 0		  A ? 0x0
-0x105 : 86 	tr 6				 Jump 6
 
-
+//////////////////////////////////////////////////////////////
+// Write 0 onto Port on FALLING EDGE of Port[x].1
+//////////////////////////////////////////////////////////////
+0x104 : 10 	lax 0		A = 0x0
+0x105 : 86 	tr 6		Jump 6
 //////////////////////////////////////////////////////////////
 // Write Value onto Port on FALLING EDGE of Port[x].1
 //////////////////////////////////////////////////////////////
@@ -209,6 +211,10 @@ SB=stack B register (save register for B)
 0x22C : 78 	incb		 BL ++,		 Skip if BL == 0xF
 0x22D : A7 	tr 27				 Jump 27
 0x22E : 7D 	rtn				 Return
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 0x22F : 30 	lbmx 0		 BM ? 0x0
 0x230 : 2A 	lblx A		 BL ? 0xA
 0x231 : 1B 	lax B		  A ? 0xB
@@ -230,7 +236,7 @@ SB=stack B register (save register for B)
 
 
 //////////////////////////////////////////////////////////////
-//
+// init some memory
 //////////////////////////////////////////////////////////////
 0x300 : 34 	lbmx 4		BM = 0x4
 0x301 : 20 	lblx 0		BL = 0x0
@@ -265,6 +271,10 @@ SB=stack B register (save register for B)
 0x31C : 22 	lblx 2		BL ? 0x2				B=0x22;
 0x31D : 68 	ex 		  	B <> SB
 0x31E : 7D 	rtn			Return
+
+//////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 0x31F : 30 	lbmx 0		BM ? 0x0
 0x320 : 20 	lblx 0		BL ? 0x0
 0x321 : 10 	lax 0		A ? 0x0
@@ -279,20 +289,20 @@ SB=stack B register (save register for B)
 0x32A : 54 	exc 0		M ? A, BM XOR 0
 0x32B : 64 	exax 		A ? X
 0x32C : F1 B7	call 637 Call 637
-0x32E : 01 	adx 1		  A ++		 Skip if Cy set
-0x32F : AC 	tr 2C				 Jump 2C
-0x330 : 64 	exax 		  A ? X
-0x331 : 01 	adx 1		  A ++		 Skip if Cy set
-0x332 : AB 	tr 2B				 Jump 2B
-0x333 : 54 	exc 0		  M ? A, BM XOR 0
-0x334 : 01 	adx 1		  A ++		 Skip if Cy set
-0x335 : AA 	tr 2A				 Jump 2A
-0x336 : 55 	exc 1		  M ? A, BM XOR 1
-0x337 : 54 	exc 0		  M ? A, BM XOR 0
-0x338 : 01 	adx 1		  A ++		 Skip if Cy set
-0x339 : A8 	tr 28				 Jump 28
-0x33A : C2 	trs 04				 Call 104
-0x33B : E1 0E	tl 40E				 Jump 40E
+0x32E : 01 	adx 1		A ++,Skip if Cy set
+0x32F : AC 	tr 2C		Jump 2C
+0x330 : 64 	exax 		A ? X
+0x331 : 01 	adx 1		A ++,Skip if Cy set
+0x332 : AB 	tr 2B		Jump 2B
+0x333 : 54 	exc 0		M ? A, BM XOR 0
+0x334 : 01 	adx 1		A ++,Skip if Cy set
+0x335 : AA 	tr 2A		Jump 2A
+0x336 : 55 	exc 1		M ? A, BM XOR 1
+0x337 : 54 	exc 0		M ? A, BM XOR 0
+0x338 : 01 	adx 1		A ++,Skip if Cy set
+0x339 : A8 	tr 28		Jump 28
+0x33A : C2 	trs 04		Call 104
+0x33B : E1 0E	tl 40E	Jump 40E
 0x33D : 00 	nop
 0x33E : 00 	nop
 0x33F : 00 	nop
