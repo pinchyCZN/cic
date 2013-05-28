@@ -24,12 +24,12 @@
 0x011 : 10	lax 0		  	A = 0x0                      		
 0x012 : C3	trs 06			Call 106             	Write_Port(0);		// write 0 on falling edge of clock
 0x013 : 11	lax 1		  	A ? 0x1                      		
-0x014 : C3	trs 06			Call 106           	Write_Port(1);		// write 1 on falling edge of clock
+0x014 : C3	trs 06			Call 106           		Write_Port(1);		// write 1 on falling edge of clock
 0x015 : F0 C0	call 300	Call 300              	  	
 0x017 : F0 AF	call 22F	Call 22F              	  	
 0x019 : 2A 	lblx A		 	BL ? 0xA                     	
 0x01A : F0 8F	call 20F	Call 20F                	
-0x01C : 78 	incb		 	BL ++,		 Skip if BL == 0xF     	
+0x01C : 78 	incb		 	BL ++,		 			Skip if BL == 0xF     	
 0x01D : 9A 	tr 1A			Jump 1A                     	
 0x01E : F0 C6	call 306	Call 306                	
 0x020 : F1 A2	call 622	Call 622                	
