@@ -1,0 +1,302 @@
+Pif Rom:
+--------
+  while ((SP_STATUS_REG & 1) == 0 );
+  while ((SP_DMA_BUSY_REG & 1) == 0 );
+  while ((SP_STATUS_REG & 4) != 0);
+
+  Status           = 0x34000000;
+  Config           = 0x0006e463;
+  SP_STATUS_REG    = 0xA;
+  PI_STATUS_REG    = 3;
+  VI_INTR_REG      = 0x03FF;
+  VI_H_START_REG   = 0;
+  VI_CURRENT_REG   = 0;
+  AI_DRAM_ADDR_REG = 0;
+  AI_LEN_REG       = 0;
+  Stack Pointer    = 0xA4001FF0;
+
+  while ((*(0xBFC007FC) & 80) != 0);
+
+
+	AT = 0xA4500000
+	T1 = 0x00000000
+	T0 = 0x00000000
+	T3 = 0xA4001000
+	T4 = 0xBFC00720
+	T5 = 0xBFC00720
+	SP = 0xA4001FF0
+
+0xA4001000 -> 0xA4001014:
+	while ((*(0xBFC007FC) & 80) != 0);
+
+	T0 = *(0xBFC007FC) & 80
+	T5 = 0xBFC007C0
+
+0xA4001018 -> 0xA400105C
+    T0 = *(0xBFC007E4)  ;00043F3F(6102cic)
+    S7 = ((T0 >> 18) & 1) | 6
+	S3 = (T0 >> 19) & 1
+	if (S3 != 0) then
+		T3 = 0xA6000000
+	else
+	    T3 = 0xB0000000
+	end if
+	S6 = (T0 >> 8) & 0xFF
+	T2 = T0 & 0xFF
+    S5 = (T0 >> 11) & 1
+	S4 = 0
+
+A4001060 -> A4001070
+	while ((SI_STATUS_REG & 2) != 0);
+
+	T1 = SI_STATUS_REG & 2
+
+A4001074 -> A40010C0
+	*(0xBFC007FC) |= 10; // what does this do now ?
+    T4 = A460 0000
+	PI_DOMAIN1_REG = 0xFF
+	PI_BSD_DOM1_PWD_REG = 0xFF
+	PI_BSD_DOM1_PGS_REG = 0xF
+	PI_BSD_DOM1_RLS_REG = 3
+	T1 = *(ROM + 0)				// ROM = T3
+	PI_DOMAIN1_REG = T1 & 0xFF
+	PI_BSD_DOM1_PWD_REG = T1 >> 8
+	PI_BSD_DOM1_PGS_REG = T1 >> 16
+	PI_BSD_DOM1_RLS_REG = T1 >> 20
+
+A40010C4 -> 0xA40010F0
+	T7 = DPC_STATUS_REG & 1
+	T0 = 0xFC0
+	T3 = *(ROM + 40)
+	T5 = 0xA410000C
+	if ((DPC_STATUS_REG & 1) == 0) then
+		PC = 0xA40010F4
+	end if
+	
+	while ((DPC_STATUS_REG & 20) != 0);
+	T7 = DPC_STATUS_REG & 20	
+0xA40010F4:
+	T5 = 0xA4000040
+	A2 = 0xFC0
+	do {
+		T1 = *(T3)			// copies boot code to 
+		T0 -= 4;			// DMEM
+		T3 += 4
+		T5 += 4
+		*(T5 - 4) = T1
+	} while (T0 != 0)
+
+A400111C -> A400113C
+	T0 = 0x670C8965
+	A0 = ((T2 * T0) & 0xFFFFFFFF) + 1
+	A1 = 0xA4000040
+	RA = 0xA4001140
+	Goto 0xA4001188
+
+A4001140 -> A4001184
+    SP -= 48
+    *(SP + 28) = RA
+	if (A1 == 0 ) {
+		A1 = A2
+	}
+	A2 = SP + 44
+	A3 = SP + 40
+	RA = A400115C
+	Goto A4001554	
+A400115C:
+	A0 = *(SP + 40)
+	T6 = *(SP + 44)
+	if ((T6 - A0) == 0) then
+		V1 = A0
+	else
+		V1 = T6 - A0
+	end if
+	RA = *(SP + 28)
+	SP += 48
+	V0 = V1
+	return
+
+
+A4001188 -> 
+	SP = SP - 224
+    *(SP + 0x3C) = RA
+    *(SP + 0x34) = S7
+    *(SP + 0x30) = S6
+    *(SP + 0x2C) = S5
+    *(SP + 0x28) = S4
+    *(SP + 0x24) = S3
+    *(SP + 0x20) = S2
+    *(SP + 0x1C) = S1
+    *(SP + 0x18) = S0
+	T6 = *(A1)
+	V1 = SP + 180
+	V0 = SP + 116
+	S0 = T6 XOR A0
+
+	do {
+	    V0 += 16    
+		*(V0 - 16) = S0
+		*(V0 - 12) = S0
+		*(V0 - 8)  = S0
+		*(V0 - 4)  = S0
+	} while (V0 != V1)
+	S1 = 0
+	S6 = A1
+	S7 = 20
+	S4 = *(A1)
+	S0 = (*S6)
+A40011F4:
+	S1 += 1
+	T7 = 0x3EF
+	S3 = *(S6 + 4)
+	S6 += 4
+	A0 = T7 - S1
+	A2 = S1
+	A1 = S0
+	RA = 0xA4001214
+	Goto 0xA4001140
+	V1 = *(SP + 116);
+	A0 = *(SP + 120);
+	A1 = S0
+	V1 += V0
+	*(SP + 116) = V1
+	A2 = S1
+	RA = 0xA4001230
+	Goto 0xA4001140
+	T8 = *(SP + 124)
+	A1 = 0x6707
+	*(SP + 120) = V0
+	T9 = T8 xor S0
+	*(SP + 124) = T9
+	....
+A4001280
+
+
+A000163C return to 80101550
+
+A4001554 -> A400156C
+    HI = (A0 * A1 ) >> 32
+	LO = (A0 * A1 ) & 0xFFFFFFFF
+	T6 = HI
+	T7 = LO
+	*(A2) = T6
+	*(A3) = T7
+	return
+
+
+A4001280
+A400128C
+A40012F4
+A4001300
+A4001424
+A40011EC
+A4001484
+A4001498
+A40014D0
+A40014EC
+A40014FC
+A4001448
+A4001570
+
+MEM:A000156C              # ---------------------------------------------------------------------------
+MEM:A000156C             
+MEM:A000156C             loc_A000156C:                            
+MEM:A000156C 3C 0B BF C0                 lui     $11, 0xBFC0
+MEM:A0001570 8D 68 07 F0                 lw      $8, 0x7F0($11)	;07F0 load
+MEM:A0001574 3C 0A FF FF                 lui     $10, 0xFFFF
+MEM:A0001578 30 84 FF FF                 andi    $4, $4, 0xFFFF
+MEM:A000157C 01 0A 40 24                 and     $8, $8, $10
+MEM:A0001580 00 88 20 25                 or      $4, $4, $8
+MEM:A0001584 25 6B 07 C0                 addiu   $11, $11, 0x7C0
+MEM:A0001588 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A000158C             
+MEM:A000158C             loc_A000158C:                            
+MEM:A000158C 8D 29 00 18                 lw      $9, 0x18($9)
+MEM:A0001590 31 29 00 02                 andi    $9, $9, 2
+MEM:A0001594 55 20 FF FD                 bnel    $9, $0, loc_A000158C
+MEM:A0001598 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A000159C AD 64 00 30                 sw      $4, 0x30($11)		;07F0		store
+MEM:A00015A0 00 00 00 00                 sll     $0, $0, 0
+MEM:A00015A4 00 00 00 00                 sll     $0, $0, 0
+MEM:A00015A8 00 00 00 00                 sll     $0, $0, 0
+MEM:A00015AC 00 00 00 00                 sll     $0, $0, 0
+MEM:A00015B0 00 00 00 00                 sll     $0, $0, 0
+MEM:A00015B4 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A00015B8             
+MEM:A00015B8             loc_A00015B8:                            
+MEM:A00015B8 8D 29 00 18                 lw      $9, 0x18($9)
+MEM:A00015BC 31 29 00 02                 andi    $9, $9, 2
+MEM:A00015C0 55 20 FF FD                 bnel    $9, $0, loc_A00015B8
+MEM:A00015C4 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A00015C8 8D 68 00 3C                 lw      $8, 0x3C($11)		;07FC		load
+MEM:A00015CC 24 09 00 20                 addiu   $9, $0, 0x20
+MEM:A00015D0 AD 65 00 34                 sw      $5, 0x34($11)		;07F4		store
+MEM:A00015D4 01 09 40 25                 or      $8, $8, $9
+MEM:A00015D8 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A00015DC             
+MEM:A00015DC             loc_A00015DC:                            
+MEM:A00015DC 8D 29 00 18                 lw      $9, 0x18($9)
+MEM:A00015E0 31 29 00 02                 andi    $9, $9, 2
+MEM:A00015E4 55 20 FF FD                 bnel    $9, $0, loc_A00015DC
+MEM:A00015E8 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A00015EC AD 68 00 3C                 sw      $8, 0x3C($11)		;07FC store
+MEM:A00015F0 20 09 00 10                 addi    $9, $0, 0x10
+MEM:A00015F4             
+MEM:A00015F4             loc_A00015F4:                            
+MEM:A00015F4 21 29 FF FF                 addi    $9, $9, 0xFFFF
+MEM:A00015F8             
+MEM:A00015F8             loc_A00015F8:                            
+MEM:A00015F8 55 20 FF FF                 bnel    $9, $0, loc_A00015F8
+MEM:A00015FC 21 29 FF FF                 addi    $9, $9, 0xFFFF
+MEM:A0001600 8D 68 00 3C                 lw      $8, 0x3C($11)		;07FC load
+MEM:A0001604 31 0A 00 80                 andi    $10, $8, 0x80
+MEM:A0001608 50 0A FF FA                 beql    $0, $10, loc_A00015F4
+MEM:A000160C 20 09 00 10                 addi    $9, $0, 0x10
+MEM:A0001610 24 0A 00 40                 addiu   $10, $0, 0x40
+MEM:A0001614 01 0A 40 25                 or      $8, $8, $10
+MEM:A0001618 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A000161C             
+MEM:A000161C             loc_A000161C:                            
+MEM:A000161C 8D 29 00 18                 lw      $9, 0x18($9)
+MEM:A0001620 31 29 00 02                 andi    $9, $9, 2
+MEM:A0001624 55 20 FF FD                 bnel    $9, $0, loc_A000161C
+MEM:A0001628 3C 09 A4 80                 lui     $9, 0xA480
+MEM:A000162C AD 68 00 3C                 sw      $8, 0x3C($11)		;07FC store
+MEM:A0001630 3C 0B A4 00                 lui     $11, 0xA400
+MEM:A0001634             
+MEM:A0001634             loc_A0001634:
+MEM:A0001634 25 6B 00 00                 addiu   $11, $11, 0
+MEM:A0001638 21 6B 00 40                 addi    $11, $11, 0x40
+MEM:A000163C 01 60 00 08                 jr      $11
+MEM:A0001640 00 00 00 00                 sll     $0, $0, 0
+
+
+
+
+7C0  joy1  ff010300 - 050001ff          <--- notice only 3 bytes were read
+7C8  joy2  ff010300 - 050002ff          <--- that is why the last byte is 
+7D0  joy3  ff018300 - ffffffff          |    still ff                     
+7D8  joy4  ff018300 - ffffffff          |                          
+7E0        fe000000 - 00000000          |(7E4??)
+7E8        00000000 - 00000000          |
+7F0        00000000 - 00000000          |
+7F8        00000000 - 00000000          |
+      }                                 |
+6102:
+00000000:  00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00
+00000010:  00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00
+00000020:  00 00 00 00-00 04 3F 3F-00 00 00 00-00 00 00 00
+00000030:  00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00
+result:
+r4=0EBDA536
+r5=C0F1D859
+
+6103:
+0000:  00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00
+0010:  00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00
+0020:  00 00 00 00-00 04 78 78-00 00 00 00-00 00 00 00
+
+6105:
+000:  00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00
+010:  00 00 00 00-00 00 00 00-00 00 00 00-00 00 00 00
+020:  00 00 00 00-00 04 91 91-00 00 00 00-00 00 00 00
