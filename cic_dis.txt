@@ -27,7 +27,7 @@ SB=stack B register (save register for B)
 0x012 : C3	trs 06			Call 106             	Write_Port(0);		// write 0 on falling edge of clock
 0x013 : 11	lax 1		  	A = 0x1
 0x014 : C3	trs 06			Call 106           		Write_Port(1);		// write 1 on falling edge of clock
-0x015 : F0 C0	call 300	Call 300
+0x015 : F0 C0	call 300	Call 300				Clear memory
 0x017 : F0 AF	call 22F	Call 22F
 0x019 : 2A 	lblx A		 	BL = 0xA
 0x01A : F0 8F	call 20F	Call 20F
@@ -147,7 +147,7 @@ SB=stack B register (save register for B)
 //////////////////////////////////////////////////////////////
 0x126 : 68 	ex 		  	B <> SB                         	B <> SB;		// Before: SB = 0x40; B = 0x0C;
 0x127 : 61 	sc 		  	C = SetBit                     	C = 1;			// After:  SB = 0x0C; B = 0x40;
-0x128 : 69 04	UNK		VENDOR COMMAND (dr)            		???????????????????????????????????
+0x128 : 69 04	        Acc<-divider (clock shift register)
 0x12A : 60 	rc 		  	C = ClrBit                    	C = 0;
 0x12B : 78 	incb		BL ++,Skip if BL == 0xF     	B++;
 0x12C : B0 	tr 30		Jump 30					if(BL < 0xF)
@@ -203,11 +203,13 @@ SB=stack B register (save register for B)
 0x222 : F0 AB	call 22B			 Call 22B
 0x224 : F0 AB	call 22B			 Call 22B
 0x226 : AB 	tr 2B				 Jump 2B
+;;
 0x227 : 01 	adx 1		  A ++		 Skip if Cy set
 0x228 : 00 	nop
 0x229 : 7A 	add		  A += M
-0x22A : 54 	exc 0		  M ? A, BM XOR 0
-0x22B : 50 	lda 0		  A ? M, BM XOR 0
+0x22A : 54 	exc 0		  M <> A, BM XOR 0
+;;
+0x22B : 50 	lda 0		  A < M, BM XOR 0		A=M[B]; BM ^ 0;
 0x22C : 78 	incb		 BL ++,		 Skip if BL == 0xF
 0x22D : A7 	tr 27				 Jump 27
 0x22E : 7D 	rtn				 Return
@@ -216,11 +218,11 @@ SB=stack B register (save register for B)
 //
 //////////////////////////////////////////////////////////////
 0x22F : 30 	lbmx 0		 BM ? 0x0
-0x230 : 2A 	lblx A		 BL ? 0xA
-0x231 : 1B 	lax B		  A ? 0xB
-0x232 : 58 	exci 0		  M ? A, BL++, BM XOR 0	 Skip if Cy
-0x233 : 15 	lax 5		  A ? 0x5
-0x234 : 5C 	excd 0		  M ? A, BL--, BM XOR 0	 Skip if Cy
+0x230 : 2A 	lblx A		 BL ? 0xA					B=0x0A
+0x231 : 1B 	lax B		  A ? 0xB					A=0x0B
+0x232 : 58 	exci 0		  M <> A, BL++, BM XOR 0	 Skip if Cy  M[B]=0xB; B++; skip
+0x233 : 15 	lax 5		  A ? 0x5					A=0x05
+0x234 : 5C 	excd 0		  M <> A, BL--, BM XOR 0	 Skip if Cy  M[B]=0x5; B--; skip
 0x235 : F0 AB	call 22B			 Call 22B
 0x237 : 2A 	lblx A		 BL ? 0xA
 0x238 : AB 	tr 2B				 Jump 2B
@@ -245,11 +247,11 @@ SB=stack B register (save register for B)
 0x304 : 2C 	lblx C		BL ? 0xC				B = 0x0C;
 0x305 : 8B 	tr B		Jump B					Goto 0xB;		// Write 0xF to Ram(0x0C)
 
-0x306 : 35 	lbmx 5		BM ? 0x5
+0x306 : 35 	lbmx 5		BM ? 0x5				
 0x307 : 20 	lblx 0		BL ? 0x0
-0x308 : 68 	ex 		  	B ? SB
+0x308 : 68 	ex 		  	B ? SB					SB = 0x50
 0x309 : 30 	lbmx 0		BM ? 0x0
-0x30A : 24 	lblx 4		BL ? 0x4
+0x30A : 24 	lblx 4		BL ? 0x4				B=0x04
 
 0x30B : 1F 	lax F		A = 0xF					while {
 0x30C : 54 	exc 0		M <> A, BM XOR 0		M[B] = 0xF;
